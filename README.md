@@ -1,130 +1,295 @@
-# Project 02 — Cats vs Dogs Image Classification
+# Project 01 — CIFAR-10 Image Classification using Convolutional Neural Networks (CNN)
 
 ## Objective
 
-Build a convolutional neural network (CNN) from scratch that can examine an image and classify it as either a **cat** or a **dog**.
+Design, train, and evaluate a **Convolutional Neural Network (CNN)** from scratch to classify images into one of **10 object categories** using the CIFAR-10 dataset.
 
-**Problem type:** Binary image classification
+**Problem Type:** Multi-Class Image Classification
+
 **Framework:** TensorFlow / Keras
-**Dataset:** [`cats_vs_dogs`](https://www.tensorflow.org/datasets/catalog/cats_vs_dogs) via `tensorflow_datasets`
+
+**Dataset:** CIFAR-10
 
 ---
 
-## Overview
+# Overview
 
-This project builds a CNN entirely from scratch (no pretrained weights) to classify images of cats and dogs. It follows on from Project 01 (CIFAR-10), applying the same core CNN principles to a binary classification problem, with deeper convolutional layers and dropout regularization to control overfitting.
+This project marks my first implementation of a **Convolutional Neural Network (CNN)** using TensorFlow and Keras.
 
----
+The objective was to understand how CNNs learn visual patterns from images by progressively extracting features such as edges, textures, and shapes before making a final classification.
 
-## Methodology
-
-### 1. Data Pipeline
-- Loaded via `tensorflow_datasets` (`cats_vs_dogs`), split 80% train / 20% validation.
-- Images resized to 150×150 and pixel values normalized to the [0, 1] range.
-- Batched (batch size 32), shuffled, and prefetched for training efficiency.
-
-### 2. Model Architecture
-
-A sequential CNN with four convolution + max-pooling blocks, increasing in filter depth:
-
-| Layer | Details |
-|---|---|
-| Input | 150 × 150 × 3 |
-| Conv2D + MaxPooling | 32 filters, 3×3 kernel, ReLU |
-| Conv2D + MaxPooling | 64 filters, 3×3 kernel, ReLU |
-| Conv2D + MaxPooling | 128 filters, 3×3 kernel, ReLU |
-| Conv2D + MaxPooling | 128 filters, 3×3 kernel, ReLU |
-| Flatten | — |
-| Dropout | 0.5 |
-| Dense | 512 units, ReLU |
-| Dense (output) | 1 unit, Sigmoid |
-
-**Why this design:**
-- Filter counts increase with depth (32 → 64 → 128 → 128) — early layers detect simple features like edges and colors; deeper layers combine these into complex shapes (fur texture, ears, snouts).
-- **Dropout(0.5)** is applied before the final dense layers to reduce overfitting, randomly deactivating half the neurons during each training step so the network learns general patterns rather than memorizing training images.
-- **Sigmoid** (rather than softmax) is used in the output layer since this is a binary classification problem (cat vs. dog) — softmax is reserved for 3+ mutually exclusive classes.
-
-### 3. Training
-- Optimizer: Adam
-- Loss: Binary crossentropy
-- Metric: Accuracy
-- Trained for multiple epochs with training/validation accuracy and loss tracked after each epoch.
-
-### 4. Real-World Validation
-- Tested the trained model on an original, unseen uploaded photo (not part of the training/validation dataset).
-- Model produced a correct classification with high confidence, confirming it generalizes beyond the benchmark dataset.
+Unlike later projects that use pretrained models, this CNN was trained **entirely from scratch**, allowing me to understand each stage of the deep learning pipeline.
 
 ---
 
-## Key Takeaways
+# Dataset
 
-- Building a CNN from scratch requires the network to learn all visual features (edges, textures, shapes) from the training data alone — this makes architecture choices (filter depth, dropout, layer count) especially important.
-- Dropout was essential to prevent the model from overfitting, especially given the relatively small effective dataset size compared to how much a CNN can potentially memorize.
-- This project set a useful baseline for comparison against transfer learning (see Project 03), which achieved higher validation accuracy in far fewer training epochs using a pretrained MobileNetV2 base.
+The CIFAR-10 dataset contains **60,000 color images**.
+
+- 50,000 Training Images
+- 10,000 Test Images
+
+Each image has dimensions:
+
+```text
+32 × 32 × 3
+```
+
+The dataset contains ten classes:
+
+- Airplane
+- Automobile
+- Bird
+- Cat
+- Deer
+- Dog
+- Frog
+- Horse
+- Ship
+- Truck
 
 ---
 
-## How to Run
+# Methodology
 
-1. Open the notebook in Google Colab.
-2. Run all cells in order (Runtime → Run all).
-3. In the final cell, upload your own image to test the model's prediction on a new, real-world photo.
+## 1. Data Preparation
 
-**Requirements:** TensorFlow, TensorFlow Datasets — pre-installed in Google Colab.
+The dataset was loaded directly from TensorFlow.
+
+Images were normalized by dividing pixel values by **255**, converting pixel intensities from:
+
+```text
+0–255
+```
+
+to
+
+```text
+0–1
+```
+
+This improves numerical stability during neural network training.
 
 ---
 
-## Tech Stack
+## 2. CNN Architecture
 
-- Python
-- TensorFlow / Keras
-- TensorFlow Datasets (`tfds`)
-- Matplotlib (visualization)
-- Google Colab (training environment, GPU-accelerated)
+A Sequential CNN was built using TensorFlow.
 
-- ## Results
+| Layer | Description |
+|---------|-------------|
+| Input | 32 × 32 × 3 |
+| Conv2D | 32 filters, 3×3 kernel, ReLU |
+| MaxPooling2D | 2×2 |
+| Conv2D | 64 filters, 3×3 kernel, ReLU |
+| MaxPooling2D | 2×2 |
+| Flatten | Converts feature maps into a vector |
+| Dense | 64 neurons, ReLU |
+| Dense | 10 neurons, Softmax |
 
-| Metric | Value |
+---
+
+## Understanding the CNN Pipeline
+
+During this project I learned the purpose of each major CNN component.
+
+### Convolution Layer (Conv2D)
+
+Extracts important visual features such as:
+
+- edges
+- curves
+- textures
+- simple shapes
+
+---
+
+### ReLU Activation
+
+Removes negative activations while preserving useful feature information, allowing the network to learn more complex patterns.
+
+---
+
+### Max Pooling
+
+Reduces image dimensions while preserving the strongest visual features.
+
+Benefits include:
+
+- Faster computation
+- Reduced memory usage
+- Lower risk of overfitting
+
+---
+
+### Flatten
+
+Transforms the feature maps into a one-dimensional vector so they can be processed by dense layers.
+
+---
+
+### Dense Layer
+
+Acts as the classifier by combining learned visual features into class scores.
+
+---
+
+### Softmax
+
+Converts the output scores into probabilities across the ten classes.
+
+The class with the highest probability becomes the final prediction.
+
+---
+
+## 3. Model Compilation
+
+Optimizer:
+
+- Adam
+
+Loss Function:
+
+- Sparse Categorical Crossentropy
+
+Evaluation Metric:
+
+- Accuracy
+
+---
+
+## 4. Training
+
+The model was trained using multiple epochs.
+
+During training, TensorFlow recorded:
+
+- Training Accuracy
+- Validation Accuracy
+- Training Loss
+- Validation Loss
+
+These metrics were used to evaluate learning progress and identify signs of overfitting.
+
+---
+
+# Results
+
+| Metric | Result |
 |---------|---------|
-| Training Accuracy | ~94.5% |
-| Validation Accuracy | ~88.9% |
-| Training Loss | ~0.14 |
-| Validation Loss | ~0.28 |
+| Validation Accuracy | ~73% |
 
 ### Observations
 
-- Training accuracy steadily improved throughout training.
-- Validation accuracy reached approximately **89%**.
-- Validation loss remained relatively stable, indicating reasonable generalization.
-- Mild overfitting appeared in later epochs as training accuracy continued to improve while validation performance plateaued.
+- The model successfully learned meaningful visual patterns from the dataset.
+- Validation accuracy steadily improved during training.
+- After approximately the seventh epoch, validation accuracy began to plateau while training accuracy continued increasing, indicating the beginning of overfitting.
+- Increasing the CNN depth improved overall performance compared with the initial architecture.
 
-- ## Challenges Encountered
+---
 
-During development several challenges were encountered:
+# Challenges Encountered
 
-- Initial dataset download failed due to compatibility issues with TensorFlow Datasets.
-- TensorFlow package conflicts required updating the runtime.
-- Different approaches (manual download vs TFDS) were evaluated before selecting the final pipeline.
-- Model architecture was adjusted to improve validation performance and reduce overfitting.
+Throughout the project several improvements were explored:
 
-- ## Future Improvements
+- Added additional convolutional layers.
+- Increased filter depth from 32 to 64.
+- Increased the number of training epochs.
+- Compared validation accuracy across different architectures.
+- Learned how model complexity affects training time and generalization.
 
-Possible improvements include:
+---
 
-- Apply data augmentation.
-- Introduce EarlyStopping.
-- Save the best model using ModelCheckpoint.
-- Evaluate on an independent test set.
-- Compare performance against pretrained models such as MobileNetV2.
+# Key Lessons Learned
 
-- ## Potential Business Applications
+This project introduced the core building blocks of computer vision using deep learning.
 
-The techniques demonstrated in this project can be adapted for:
+Major concepts learned included:
 
-- Product image verification
-- Manufacturing quality inspection
-- Animal species recognition
-- Medical image screening
-- Inventory automation
-- Agricultural crop monitoring
-- Retail product classification
+- Convolution
+- Feature Extraction
+- ReLU Activation
+- Max Pooling
+- Flattening
+- Dense Layers
+- Softmax Classification
+- Epochs
+- Batch Size
+- Validation Split
+- Loss Functions
+- Optimizers (Adam)
+
+This project also demonstrated how deeper CNNs can improve performance, while excessive training may lead to overfitting.
+
+---
+
+# Future Improvements
+
+Potential improvements include:
+
+- Data Augmentation
+- Dropout Regularization
+- EarlyStopping
+- ModelCheckpoint
+- Learning Rate Scheduling
+- Transfer Learning using MobileNetV2
+
+These improvements are explored further in Project 02 and Project 03.
+
+---
+
+# Potential Business Applications
+
+The techniques learned in this project can be applied to:
+
+- Product Recognition
+- Manufacturing Quality Control
+- Medical Image Classification
+- Retail Automation
+- Agricultural Disease Detection
+- Wildlife Monitoring
+- Autonomous Vehicle Vision Systems
+
+---
+
+# Skills Demonstrated
+
+- Python
+- TensorFlow
+- Keras
+- Convolutional Neural Networks
+- Computer Vision
+- Image Classification
+- Data Preprocessing
+- Model Evaluation
+- Deep Learning Fundamentals
+- GPU Training (Google Colab)
+
+---
+
+# How to Run
+
+1. Open the notebook in Google Colab.
+2. Run all notebook cells in sequence.
+3. Train the CNN on the CIFAR-10 dataset.
+4. Observe the learning curves.
+5. Evaluate the trained model on unseen test images.
+
+---
+
+# Tech Stack
+
+- Python
+- TensorFlow
+- Keras
+- NumPy
+- Matplotlib
+- Google Colab
+
+---
+
+# Key Takeaway
+
+Project 01 established the foundation for my computer vision journey by teaching how Convolutional Neural Networks learn visual features directly from data.
+
+The concepts learned here became the basis for subsequent projects involving deeper CNN architectures and Transfer Learning, ultimately leading to significantly higher-performing image classification models.
